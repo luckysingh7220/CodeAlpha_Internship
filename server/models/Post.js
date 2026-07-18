@@ -47,13 +47,12 @@ const postSchema = new mongoose.Schema(
   }
 );
 
-// Virtual for counts
 postSchema.virtual('likeCount').get(function () {
-  return this.likes.length;
+  return this.likes ? this.likes.length : 0;
 });
 
 postSchema.virtual('commentCount').get(function () {
-  return this.comments.length;
+  return this.comments ? this.comments.length : 0;
 });
 
 postSchema.set('toJSON', { virtuals: true });
