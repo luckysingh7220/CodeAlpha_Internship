@@ -19,17 +19,8 @@ const allowedOrigins = [
 
 const corsOptions = {
   origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true);
-    const isVercel = origin && origin.includes('vercel.app');
-    const isLocalhost = origin && origin.includes('localhost');
-    const isClientUrl = origin === process.env.CLIENT_URL;
-
-    if (isVercel || isLocalhost || isClientUrl || process.env.NODE_ENV === 'development') {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
+    // Allow any origin
+    callback(null, true);
   },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
