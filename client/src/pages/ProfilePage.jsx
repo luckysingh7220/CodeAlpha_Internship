@@ -2,11 +2,13 @@ import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { userAPI, postAPI } from '../services/api';
+import { useToast } from '../context/ToastContext';
 import PostCard from '../components/PostCard';
 
 const ProfilePage = () => {
   const { id } = useParams();
   const { user: currentUser, updateUser } = useAuth();
+  const { addToast } = useToast();
   const [profile, setProfile] = useState(null);
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -15,6 +17,7 @@ const ProfilePage = () => {
   const [showFollowList, setShowFollowList] = useState(null); // 'followers' | 'following' | null
   const [followList, setFollowList] = useState([]);
   const [editBio, setEditBio] = useState('');
+  const [editAvatar, setEditAvatar] = useState('');
   const [editSaving, setEditSaving] = useState(false);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -35,6 +38,7 @@ const ProfilePage = () => {
         userRes.data.followers?.some((f) => (f._id || f) === currentUser?._id)
       );
       setEditBio(userRes.data.bio || '');
+      setEditAvatar(userRes.data.avatar || '');
     } catch (err) {
       console.error('Profile error:', err);
     }
@@ -57,20 +61,24 @@ const ProfilePage = () => {
           ? [...(prev.followers || []), { _id: currentUser._id }]
           : (prev.followers || []).filter((f) => (f._id || f) !== currentUser._id),
       }));
+      addToast(data.isFollowing ? 'Followed user' : 'Unfollowed user', 'success');
     } catch (err) {
       console.error('Follow error:', err);
+      addToast('Failed to follow user', 'error');
     }
   };
 
   const handleSaveProfile = async () => {
     setEditSaving(true);
     try {
-      const { data } = await userAPI.updateProfile({ bio: editBio });
-      setProfile((prev) => ({ ...prev, bio: data.bio }));
-      updateUser({ bio: data.bio });
+      const { data } = await userAPI.updateProfile({ bio: editBio, avatar: editAvatar });
+      setProfile((prev) => ({ ...prev, bio: data.bio, avatar: data.avatar }));
+      updateUser({ bio: data.bio, avatar: data.avatar });
       setShowEditModal(false);
+      addToast('Profile updated successfully!', 'success');
     } catch (err) {
       console.error('Update error:', err);
+      addToast('Failed to update profile', 'error');
     }
     setEditSaving(false);
   };
@@ -236,6 +244,17 @@ const ProfilePage = () => {
                 <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
                   {editBio.length}/200
                 </span>
+              </div>
+              <div className="form-group">
+                <label className="form-label" htmlFor="edit-avatar">Profile Picture URL</label>
+                <input
+                  id="edit-avatar"
+                  type="text"
+                  className="form-input"
+                  value={editAvatar}
+                  onChange={(e) => setEditAvatar(e.target.value)}
+                  placeholder="https://example.com/avatar.jpg"
+                />
               </div>
               <div className="profile-edit-actions">
                 <button className="btn btn-secondary" onClick={() => setShowEditModal(false)}>

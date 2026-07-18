@@ -1,7 +1,11 @@
 # 🌐 NexusHub — MERN Social Media Platform
 
 A full-stack mini social media application built with the **MERN stack** (MongoDB, Express.js, React, Node.js) featuring a premium dark glassmorphism UI.
-Live Link- "https://code-alpha-task2-bvutq67z7-luckysingh7220s-projects.vercel.app/"
+**Live Demo:** [https://code-alpha-task2-theta.vercel.app/](https://code-alpha-task2-theta.vercel.app/)
+
+### 🚀 Demo Credentials
+- **Email:** demo@gmail.com
+- **Password:** demo@1234
 ## ✨ Features
 
 - **User Authentication** — Register, login, JWT-based sessions

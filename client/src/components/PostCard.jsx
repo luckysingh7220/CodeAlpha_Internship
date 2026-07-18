@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
 import { postAPI } from '../services/api';
 import CommentSection from './CommentSection';
 
 const PostCard = ({ post, onPostUpdate, onPostDelete }) => {
   const { user } = useAuth();
+  const { addToast } = useToast();
   const [liked, setLiked] = useState(post.likes?.some((l) => (l._id || l) === user?._id));
   const [likeCount, setLikeCount] = useState(post.likeCount || post.likes?.length || 0);
   const [showMenu, setShowMenu] = useState(false);
@@ -13,6 +15,8 @@ const PostCard = ({ post, onPostUpdate, onPostDelete }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(post.content);
   const [currentPost, setCurrentPost] = useState(post);
+  const [isLiking, setIsLiking] = useState(false);
+  const [showHeartPop, setShowHeartPop] = useState(false);
 
   const isAuthor = user?._id === (post.author?._id || post.author);
 
@@ -28,14 +32,32 @@ const PostCard = ({ post, onPostUpdate, onPostDelete }) => {
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   };
 
-  const handleLike = async () => {
-    if (!user) return;
+  const handleLike = async (e) => {
+    if (e) e.stopPropagation();
+    if (isLiking || !user) return;
+    setIsLiking(true);
     try {
       const { data } = await postAPI.likePost(post._id);
       setLiked(data.isLiked);
       setLikeCount(data.likeCount);
+      setCurrentPost(prev => ({ ...prev, likes: data.likes }));
+      onPostUpdate?.(data);
+      if (data.isLiked) {
+        addToast('Liked post!', 'success');
+      }
     } catch (err) {
       console.error('Like error:', err);
+      addToast('Failed to like post', 'error');
+    }
+    setIsLiking(false);
+  };
+
+  const handleDoubleClick = (e) => {
+    e.stopPropagation();
+    if (!liked) {
+      handleLike(e);
+      setShowHeartPop(true);
+      setTimeout(() => setShowHeartPop(false), 1000);
     }
   };
 
@@ -132,9 +154,14 @@ const PostCard = ({ post, onPostUpdate, onPostDelete }) => {
       )}
 
       {currentPost.image && (
-        <Link to={`/post/${post._id}`}>
-          <img src={currentPost.image} alt="Post" className="post-image" />
-        </Link>
+        <div className="post-image-container" onDoubleClick={handleDoubleClick}>
+          <img src={currentPost.image} alt="Post content" className="post-image" />
+          {showHeartPop && (
+            <div className="heart-pop-animation">
+              ❤️
+            </div>
+          )}
+        </div>
       )}
 
       <div className="post-actions">

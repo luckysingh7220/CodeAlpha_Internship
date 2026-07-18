@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
 import { postAPI } from '../services/api';
 
 const CreatePostModal = ({ onClose, onPostCreated }) => {
   const { user } = useAuth();
+  const { addToast } = useToast();
   const [content, setContent] = useState('');
   const [image, setImage] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -24,6 +26,7 @@ const CreatePostModal = ({ onClose, onPostCreated }) => {
         image: image.trim(),
       });
       onPostCreated?.(data);
+      addToast('Post created successfully!', 'success');
       onClose();
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to create post');
