@@ -66,11 +66,11 @@ userSchema.methods.matchPassword = async function (enteredPassword) {
 
 // Virtual for follower/following counts
 userSchema.virtual('followerCount').get(function () {
-  return this.followers.length;
+  return this.followers ? this.followers.length : 0;
 });
 
 userSchema.virtual('followingCount').get(function () {
-  return this.following.length;
+  return this.following ? this.following.length : 0;
 });
 
 userSchema.set('toJSON', { virtuals: true });
