@@ -4,6 +4,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { ToastProvider } from './context/ToastContext';
 import Navbar from './components/Navbar';
 import Sidebar from './components/Sidebar';
+import MobileNav from './components/MobileNav';
 import ProtectedRoute from './components/ProtectedRoute';
 import CreatePostModal from './components/CreatePostModal';
 import LoginPage from './pages/LoginPage';
@@ -24,7 +25,6 @@ const AppContent = () => {
   const showLayout = isAuthenticated && !isAuthPage;
 
   const handlePostCreated = () => {
-    // Refresh the current page by forcing re-render
     window.location.reload();
   };
 
@@ -77,6 +77,10 @@ const AppContent = () => {
           {showLayout && <Footer />}
         </div>
       </div>
+
+      {showLayout && (
+        <MobileNav onCreatePost={() => setShowCreatePost(true)} />
+      )}
 
       {showCreatePost && (
         <CreatePostModal

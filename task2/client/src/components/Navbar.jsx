@@ -9,14 +9,15 @@ const Navbar = ({ onCreatePost }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [showResults, setShowResults] = useState(false);
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const searchRef = useRef(null);
   const searchTimeout = useRef(null);
 
-  // Close search results on outside click
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (searchRef.current && !searchRef.current.contains(e.target)) {
         setShowResults(false);
+        setMobileSearchOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -48,6 +49,7 @@ const Navbar = ({ onCreatePost }) => {
 
   const handleResultClick = (userId) => {
     setShowResults(false);
+    setMobileSearchOpen(false);
     setSearchQuery('');
     navigate(`/profile/${userId}`);
   };
@@ -65,51 +67,96 @@ const Navbar = ({ onCreatePost }) => {
       </Link>
 
       {isAuthenticated && (
-        <div className="navbar-search" ref={searchRef}>
-          <span className="navbar-search-icon">🔍</span>
-          <input
-            type="text"
-            className="navbar-search-input"
-            placeholder="Search people..."
-            value={searchQuery}
-            onChange={handleSearch}
-            onFocus={() => searchResults.length > 0 && setShowResults(true)}
-          />
-          {showResults && searchResults.length > 0 && (
-            <div className="navbar-search-results">
-              {searchResults.map((u) => (
-                <div
-                  key={u._id}
-                  className="navbar-search-result-item"
-                  onClick={() => handleResultClick(u._id)}
-                >
-                  <img src={u.avatar} alt={u.username} className="avatar avatar-sm" />
-                  <div>
-                    <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>{u.username}</div>
-                    {u.bio && (
-                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                        {u.bio.slice(0, 50)}
-                      </div>
-                    )}
+        <>
+          {/* Desktop search bar */}
+          <div className="navbar-search navbar-search-desktop" ref={searchRef}>
+            <span className="navbar-search-icon">🔍</span>
+            <input
+              type="text"
+              className="navbar-search-input"
+              placeholder="Search people..."
+              value={searchQuery}
+              onChange={handleSearch}
+              onFocus={() => searchResults.length > 0 && setShowResults(true)}
+            />
+            {showResults && searchResults.length > 0 && (
+              <div className="navbar-search-results">
+                {searchResults.map((u) => (
+                  <div
+                    key={u._id}
+                    className="navbar-search-result-item"
+                    onClick={() => handleResultClick(u._id)}
+                  >
+                    <img src={u.avatar} alt={u.username} className="avatar avatar-sm" />
+                    <div>
+                      <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>{u.username}</div>
+                      {u.bio && (
+                        <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                          {u.bio.slice(0, 50)}
+                        </div>
+                      )}
+                    </div>
                   </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Mobile search overlay */}
+          {mobileSearchOpen && (
+            <div className="navbar-search navbar-search-mobile" ref={searchRef}>
+              <span className="navbar-search-icon">🔍</span>
+              <input
+                type="text"
+                className="navbar-search-input"
+                placeholder="Search people..."
+                value={searchQuery}
+                onChange={handleSearch}
+                autoFocus
+              />
+              {showResults && searchResults.length > 0 && (
+                <div className="navbar-search-results">
+                  {searchResults.map((u) => (
+                    <div
+                      key={u._id}
+                      className="navbar-search-result-item"
+                      onClick={() => handleResultClick(u._id)}
+                    >
+                      <img src={u.avatar} alt={u.username} className="avatar avatar-sm" />
+                      <div>
+                        <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>{u.username}</div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              ))}
+              )}
             </div>
           )}
-        </div>
+        </>
       )}
 
       <div className="navbar-actions">
         {isAuthenticated ? (
           <>
-            <button className="btn btn-primary btn-sm" onClick={onCreatePost}>
-              ✍️ Post
+            {/* Mobile search toggle */}
+            <button
+              className="btn btn-ghost navbar-search-toggle"
+              onClick={() => setMobileSearchOpen(!mobileSearchOpen)}
+              title="Search"
+            >
+              🔍
             </button>
+
+            <button className="btn btn-primary btn-sm navbar-post-btn" onClick={onCreatePost}>
+              ✍️ <span className="navbar-post-btn-text">Post</span>
+            </button>
+
             <Link to={`/profile/${user?._id}`} className="navbar-user">
               <img src={user?.avatar} alt={user?.username} className="avatar avatar-xs" />
               <span className="navbar-user-name">{user?.username}</span>
             </Link>
-            <button className="btn btn-ghost" onClick={handleLogout} title="Logout">
+
+            <button className="btn btn-ghost navbar-logout-btn" onClick={handleLogout} title="Logout">
               🚪
             </button>
           </>
